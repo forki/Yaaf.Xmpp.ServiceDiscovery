@@ -40,3 +40,12 @@ NUGET
       Yaaf.DependencyInjection.SimpleInjector (>= 1.1.3)
       Yaaf.FSharp.Helper (>= 0.1.3)
       Yaaf.Sasl (>= 1.0.0)
+GITHUB
+  remote: matthid/Yaaf.FSharp.Helper
+  specs:
+    src/test/Test.Yaaf.FSharp.Helper/MyTestClass.fs (29898fb7665dd50da4b994f0b6a0b626a09164d5)
+    src/test/Test.Yaaf.FSharp.Helper/StreamTestClass.fs (29898fb7665dd50da4b994f0b6a0b626a09164d5)
+  remote: matthid/Yaaf.Xmpp.Runtime
+  specs:
+    src/test/Test.Yaaf.Xml/XmlTestHelper.fs (8860bab0c2e48a12da961bee3fa41b3704fe017c)
+    src/test/Test.Yaaf.Xmpp.Runtime/TestHelper.fs (8860bab0c2e48a12da961bee3fa41b3704fe017c)

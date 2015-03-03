@@ -49,6 +49,15 @@
     <Compile Include="..\..\SolutionInfo.fs">
       <Link>SolutionInfo.fs</Link>
     </Compile>
+    <Compile Include="..\..\..\paket-files\matthid\Yaaf.FSharp.Helper\src\test\Test.Yaaf.FSharp.Helper\MyTestClass.fs">
+      <Link>MyTestClass.fs</Link>
+    </Compile>
+    <Compile Include="..\..\..\paket-files\matthid\Yaaf.Xmpp.Runtime\src\test\Test.Yaaf.Xmpp.Runtime\TestHelper.fs">
+      <Link>TestHelper.fs</Link>
+    </Compile>
+    <Compile Include="ServiceDiscoverParseTest.fs" />
+    <Compile Include="XmppServiceDiscoveryTest.fs" />
+    <Compile Include="XmppServiceDiscoveryComponentTest.fs" />
     <None Include="Script.fsx" />
     <None Include="app.config" />
     <None Include="paket.references" />
@@ -58,11 +67,6 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <ProjectReference Include="..\..\source\Yaaf.Xmpp.IM\Yaaf.Xmpp.IM.fsproj">
-      <Name>Yaaf.Xmpp.IM</Name>
-      <Project>{2780ed8f-9718-485f-b231-26b2e8aa5d9f}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0')">
@@ -204,6 +208,13 @@
       <Private>True</Private>
       <Paket>True</Paket>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\source\Yaaf.Xmpp.ServiceDiscovery\Yaaf.Xmpp.ServiceDiscovery.fsproj">
+      <Name>Yaaf.Xmpp.ServiceDiscovery</Name>
+      <Project>{2780ed8f-9718-485f-b231-26b2e8aa5d9f}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0')">
