@@ -1,10 +1,9 @@
+redirects: on
 source https://nuget.org/api/v2
 
-//Build
+// Build
 nuget Yaaf.AdvancedBuilding
 nuget NUnit.Runners
-// Until windows support is fixed
-nuget FSharp.Formatting == 2.6.3
 
 // Project
 nuget FSharp.Core
@@ -16,7 +15,7 @@ nuget Yaaf.Xmpp.Runtime
 // Until Visual Studio test runner supports later versions.
 nuget NUnit == 2.6.3
 nuget Unquote
-nuget Foq
+nuget Foq content: none
 nuget FsUnit
 
 github matthid/Yaaf.FSharp.Helper src/test/Test.Yaaf.FSharp.Helper/MyTestClass.fs

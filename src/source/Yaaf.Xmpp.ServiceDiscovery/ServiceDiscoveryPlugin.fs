@@ -27,12 +27,12 @@ type IDiscoService =
     abstract RequestDiscoInfos : JabberId * NodePath -> Async<InfoResult * NodePath>
     abstract RequestDiscoItems : JabberId * NodePath -> Async<ItemsResult * NodePath>
 
-type DiscoPlugin 
+type DiscoPlugin
     (runtimeConfig : IRuntimeConfig, neg:INegotiationService, stanzas:IXmlStanzaService, kernel : IKernel,
      registrar : IPluginManagerRegistrar, addressing : IAddressingService) =
 
-    let discoInfoFeatures = new System.Collections.Generic.Dictionary<_,_>()
-    let discoItemsFeatures = new System.Collections.Generic.Dictionary<_,_>()
+    let discoInfoFeatures = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+    let discoItemsFeatures = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
     let getKey (node:NodePath) =
         match node with
@@ -66,7 +66,7 @@ type DiscoPlugin
                         sendResult (ServiceDiscoveryAction.InfoResult(tryGet ([],[]) key discoInfoFeatures, node))
                 | DiscoverType.Items ->
                     if isServerBareIdStanza then
-                        // TODO: return available resources (not connected ones!)
+                        // TODO: return available resources (not connected ones!), IM plugin has to register a callback
                         let api = kernel.Get<IServerApi>()
                         sendResult 
                             (ServiceDiscoveryAction.ItemsResult(
@@ -79,8 +79,11 @@ type DiscoPlugin
                         let components =
                             if runtimeConfig.IsServerSide then
                                 let api = kernel.Get<IServerApi>()
-                                let components = api.ConnectedComponents
-                                components |> List.map (fun comp -> { Jid = comp.Jid; Name = comp.Name; Node = None})
+                                let components = api.ConnectionManager.FilterConnections IsComponent
+                                components 
+                                |> Seq.filter (fun client -> client.ConnectTask.IsCompleted)
+                                |> Seq.map (fun client -> { Jid = client.ConnectTask.Result; Name = None; Node = None})
+                                |> Seq.toList
                             else []
                         sendResult (ServiceDiscoveryAction.ItemsResult(registeredItems @ components, node))
             | _ ->
@@ -118,22 +121,31 @@ type DiscoPlugin
         
     let registerDiscoItem (node:NodePath, discoItem:DiscoItem) =
         let key = getKey node
-        match discoItemsFeatures.TryGetValue key with
-        | true, v ->  discoItemsFeatures.[key] <- discoItem :: v
-        | false, _ -> discoItemsFeatures.Add(key, [ discoItem ])
+        discoItemsFeatures.AddOrUpdate(key, [discoItem], fun _ oldList ->
+          let v = oldList |> List.filter (fun d -> not (d.Jid = discoItem.Jid && d.Node = discoItem.Node)) 
+          discoItem :: v)
+        |> ignore
+        //match discoItemsFeatures.TryGetValue key with
+        //| true, v ->  discoItemsFeatures.[key] <- discoItem :: v
+        //| false, _ -> discoItemsFeatures.Add(key, [ discoItem ])
 
     let registerIdentityItem (node:NodePath, identityItem:IdentityItemInfo) =
         let key = getKey node
-        match discoInfoFeatures.TryGetValue key with
-        | true, (identities,features) ->  discoInfoFeatures.[key] <- (identityItem :: identities, features)
-        | false, _ -> discoInfoFeatures.Add(key, ([ identityItem ], []))
+        discoInfoFeatures.AddOrUpdate(key, (([identityItem], []) : InfoResult), fun _ ((identities, features):InfoResult) ->
+          //if oldList |> List.exists (fun (e,a) ->  (d = identityItem.Category)) then
+          //  failwith "item exists."
+          (identityItem :: identities, features)
+         )
+        |> ignore
 
     let registerFeatureItem (node:NodePath, featureItem:FeatureItemInfo) =
         let key = getKey node
-        match discoInfoFeatures.TryGetValue key with
-        | true, (identities,features) -> discoInfoFeatures.[key] <- (identities, featureItem :: features)
-        | false, _ -> discoInfoFeatures.Add(key, ([], [ featureItem ]))
-
+        discoInfoFeatures.AddOrUpdate(key, (([],  [featureItem]) : InfoResult), fun _ ((identities, features):InfoResult) ->
+          //if oldList |> List.exists (fun (e,a) ->  (d = identityItem.Category)) then
+          //  failwith "item exists."
+          (identities, featureItem :: features)
+         )
+        |> ignore
 
     let addressing =
         { new IRawStanzaPlugin with        
