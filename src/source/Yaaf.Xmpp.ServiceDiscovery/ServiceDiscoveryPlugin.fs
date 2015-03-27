@@ -177,3 +177,32 @@ type DiscoPlugin
         member x.PluginService = Service.FromInstance<IDiscoService,_> x
         member __.Name = "DiscoPlugin"
 
+module XmppSetup =
+  
+    /// Adds the ServiceDiscovery plugin
+#if CSHARP_EXTENSIONS
+    [<System.Runtime.CompilerServices.Extension>]
+#endif
+    let AddServiceDiscovery (setup: ClientSetup) = 
+        let setupDiscovery (runtime:XmppRuntime) = 
+            let mgr = runtime.PluginManager
+            mgr.RegisterPlugin<DiscoPlugin>()
+        setup
+        |> XmppSetup.addHelper ignore setupDiscovery
+    let addServiceDiscovery setup = AddServiceDiscovery(setup)
+
+
+namespace Yaaf.Xmpp.ServiceDiscovery.Server
+
+open Yaaf.Xmpp.Server
+open Yaaf.Xmpp.ServiceDiscovery
+
+module XmppServerSetup = 
+
+#if CSHARP_EXTENSIONS
+    [<System.Runtime.CompilerServices.Extension>]
+#endif
+    let addDiscoPlugin setup =
+        setup
+        |> XmppServerSetup.addToAllStreams XmppSetup.addServiceDiscovery
+        
